@@ -9,9 +9,10 @@ class StoreFilters
 
 	constructor: (@store) ->
 		@filters = []
+		return
 
 
-	getAll: () ->
+	getAll: ->
 		return @filters
 
 
@@ -25,7 +26,7 @@ class StoreFilters
 		return
 
 
-	has: () ->
+	has: ->
 		return @filters.length > 0
 
 

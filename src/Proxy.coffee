@@ -94,10 +94,10 @@ class Proxy extends Miwo.Object
 			operation.running = true
 			return
 		options.onSuccess = (response) =>
-			@proccessResponse(true, operation, request, response, callback)
+			@processResponse(true, operation, request, response, callback)
 			return
 		options.onFailure = =>
-			@proccessResponse(false, operation, request, null, callback)
+			@processResponse(false, operation, request, null, callback)
 			return
 		if operation.async isnt undefined
 			options.async = operation.async
@@ -152,7 +152,7 @@ class Proxy extends Miwo.Object
 		return JSON.encode(data)
 
 
-	proccessResponse: (success, operation, request, response, callback) ->
+	processResponse: (success, operation, request, response, callback) ->
 		if !success
 			xhr = request.xhr
 			operation.setException(xhr.responseText, xhr.status)

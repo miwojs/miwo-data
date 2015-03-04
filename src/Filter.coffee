@@ -1,4 +1,4 @@
-class Filter
+class Filter extends Miwo.Object
 
 	name: null
 	type: "string"
@@ -7,8 +7,8 @@ class Filter
 	params: null
 
 
-	constructor: (config = {}) ->
-		Object.expand(this, config)
+	constructor: (config) ->
+		super(config)
 		if @operation is "in" or @operation is "!in"
 			@value = @value.split(",")
 		return

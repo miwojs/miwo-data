@@ -8,6 +8,8 @@ class StoreManager extends BaseManager
 		store = super(name)
 		if !store.isStore
 			throw new Error("Created store is not instance of Miwo.data.Store")
+		if !store.name
+			store.name = name
 		return store
 
 

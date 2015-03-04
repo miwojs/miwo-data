@@ -75,7 +75,11 @@ class Store extends Miwo.Object
 		if !@entity
 			throw new Error("Unspecified entity or fields for store #{this}")
 
-		if @proxy
+		if !@proxy && @api
+			@proxy = {api: @api}
+			delete @api
+
+		if @proxy || @api
 			proxyMgr = miwo.proxyMgr
 			if Type.isString(@proxy)
 				@proxy = proxyMgr.get(@proxy)
@@ -206,6 +210,7 @@ class Store extends Miwo.Object
 		for values in data
 			records.push(@createRecord(values))
 		@loadRecords(records, clear)
+		@emit("load", this, records)
 		return
 
 
@@ -437,11 +442,16 @@ class Store extends Miwo.Object
 	# Data loading from proxy
 
 
-	load: (options = {}) ->
-		if @loading
-			return
+	load: (options = {}, done = null) ->
 		if !@proxy
 			throw new Error("Cant load data, proxy is missing in store")
+
+		if options.once && @loaded
+			miwo.async => done(this, @data, true) if done
+			return
+
+		if @loading
+			return
 
 		options.params = Object.merge({}, @params, options.params)
 		options.offset = (if (options.offset isnt `undefined`) then options.offset else ((if options.page then options.page - 1 else 0)) * @pageSize)
@@ -452,66 +462,53 @@ class Store extends Miwo.Object
 		options.recordFactory = @bound("createRecord")
 
 		@emit("beforeload", this, options)
-
-		@page = (if @pageSize then Math.max(1, Math.ceil(options.offset / @pageSize) + 1) else 1)
 		@loading = true
-		@proxy.read(options, @bound("onProxyLoad"))
+		@page = (if @pageSize then Math.max(1, Math.ceil(options.offset / @pageSize) + 1) else 1)
+
+		@proxy.read options, (operation) =>
+			response = operation.getResponse()
+			records = operation.getRecords()
+			successful = operation.wasSuccessful()
+			@loadRecords(records, true) if successful
+			@totalCount = response.total if response
+			@loading = false
+			@loaded = true
+			@emit("load", this, records, successful)
+			done(this, records, successful) if done
 		return
 
 
-	loadonce: (options) ->
-		return  if @loaded
-		@load(options)
+	reload: (done)->
+		@load({page: @page}, done)
 		return
 
 
-	reload: ->
-		@load({page: @page})
-		return
-
-
-	# @private
-	# Called internally when a Proxy has completed a load request
-	onProxyLoad: (operation) ->
-		response = operation.getResponse()
-		records = operation.getRecords()
-		successful = operation.wasSuccessful()
-		if response
-			@totalCount = response.total
-		if successful
-			@loadRecords(records, true)
-		@loading = false
-		@loaded = true
-		@emit("load", this, records, successful)
-		return
-
-
-	loadPage: (page) ->
+	loadPage: (page, done) ->
 		return  unless @pageSize
 		@page = Math.max(1, Math.min(page, Math.ceil(@totalCount / @pageSize)))
-		@load({page: @page})
+		@load({page: @page}, done)
 		return
 
 
-	loadPrevPage: ->
+	loadPrevPage: (done) ->
 		return  unless @pageSize
 		@page = Math.max(1, @page - 1)
-		@load({page: @page})
+		@load({page: @page}, done)
 		return
 
 
-	loadNextPage: ->
+	loadNextPage: (done) ->
 		return  unless @pageSize
 		@page = Math.min(@page + 1, Math.ceil(@totalCount / @pageSize))
-		@load({page: @page})
+		@load({page: @page}, done)
 		return
 
 
-	loadNestedPage: (type)->
+	loadNestedPage: (type, done)->
 		if type is 'prev'
-			@loadPrevPage()
+			@loadPrevPage(done)
 		else if type is 'next'
-			@loadNextPage()
+			@loadNextPage(done)
 		return
 
 
@@ -562,23 +559,28 @@ class Store extends Miwo.Object
 			needsSync = true
 
 		if needsSync
-			operations.sync = true
+			operations.preventSync = false
 			@emit("beforesync", operations)
-			if operations.sync
-				@proxy.execute(operations, {recordFactory: @bound("createRecord")})
-				@emit("sync", this)
+			@proxy.execute(operations, {recordFactory: @bound("createRecord")})  if !operations.preventSync
 		return
 
 
 	createProxyCallback: (name, options) ->
 		return (op) =>
+			@emit("sync", this, op)
 			if op.wasSuccessful()
 				@emit("success", this, op)
 				this[name]()
-				if options.success then options.success(this, op)
+				if Type.isObject(options)
+					if options.success then options.success(this, op)
+				else
+					options(this, op)
 			else
 				@emit("failure", this, op)
-				if options.failure then options.failure(this, op)
+				if Type.isObject(options)
+					if options.failure then options.failure(this, op)
+				else
+					options(this, op)
 
 
 	onProxyCreateCallback: ->

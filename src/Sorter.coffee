@@ -1,10 +1,7 @@
-class Sorter
+class Sorter extends Miwo.Object
 
 	name: null
 	dir: null
-
-	constructor: (config = {}) ->
-		Object.expand(this, config)
 
 
 	compare: (a, b) ->

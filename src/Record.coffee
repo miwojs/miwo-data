@@ -225,7 +225,7 @@ class Record extends Miwo.Events
 	# Ends an edit. If any data was modified, the containing store is notified (ie, the store's `update` event will fire).
 	# @param {Boolean} silent True to not notify the store of the change
 	# @param {String[]} modifiedFieldNames Array of field names changed during edit.
-	endEdit: (silent = true, modifiedFieldNames) ->
+	endEdit: (silent, modifiedFieldNames) ->
 		if @_editing
 			@_editing = false
 			data = @_dataSaved

@@ -1,5 +1,4 @@
 BaseManager = require './BaseManager'
-Entity = require './Entity'
 
 
 class EntityManager extends BaseManager
@@ -39,11 +38,15 @@ class EntityManager extends BaseManager
 
 
 	createEntityClass: (config) ->
-		klass = class extends Entity
+		Entity = require './Entity'
+
+		class GeneratedEntity extends Entity
 			idProperty: config.idProperty
+
 		for field,obj of config.fields
-			klass.field(field, obj)
-		return klass
+			GeneratedEntity.field(field, obj)
+
+		return GeneratedEntity
 
 
 module.exports = EntityManager

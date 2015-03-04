@@ -39,6 +39,16 @@ gulp.task("watch", function() {
 	gulp.watch(paths.watch.coffee, ['compile-js']);
 });
 
+gulp.task('build', function(cb) {
+	sequence(['compile-js'], cb);
+});
+
+gulp.task('dist', function(cb) {
+	sequence('build', ['minify-js'], cb);
+});
+
+
+
 gulp.task('compile-js', function() {
 	return gulp.src(paths.js.src, { read: false })
 		.pipe(pipes.createPlumber())
@@ -53,12 +63,4 @@ gulp.task('minify-js', function() {
 		.pipe(uglify())
 		.pipe(rename({suffix:'.min'}))
 		.pipe(gulp.dest(paths.js.distDir));
-});
-
-gulp.task('build', function(cb) {
-	sequence(['compile-js'], cb);
-});
-
-gulp.task('dist', function(cb) {
-	sequence('build', ['minify-js'], cb);
 });
