@@ -34,20 +34,18 @@ class Proxy extends Miwo.Object
 		return
 
 
-	execute: (operations, config) ->
+	execute: (operations, options) ->
 		if operations.destroy
-			@executeOperations('destroy', operations.destroy, config)
+			options.records = operations.destroy.records
+			@destroy(options, operations.destroy.callback)
+
 		if operations.create
-			@executeOperations('create', operations.create, config)
+			options.records = operations.create.records
+			@create(options, operations.create.callback)
+
 		if operations.update
-			@executeOperations('update', operations.update, config)
-		return
-
-
-	executeOperations: (action, operations, config) ->
-		opc = Object.append({}, config)
-		Object.append(opc, {records: operations.records})
-		@[action](opc, operations.callback)
+			options.records = operations.update.records
+			@update(options, operations.update.callback)
 		return
 
 
@@ -72,6 +70,12 @@ class Proxy extends Miwo.Object
 
 
 	createOperation: (action, config) ->
+		records = []
+		if config.records
+			for record in config.records
+				records.push(record)
+		config.records = records
+
 		op = new Operation(config)
 		op.action = action
 		return op

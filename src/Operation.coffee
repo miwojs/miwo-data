@@ -7,43 +7,43 @@ class Operation extends Miwo.Object
 	  @cfg {String} async
 	  Execute this operation asynchronously. Defaults by proxy settings
 	  ###
-	async: `undefined`
+	async: undefined
 
 	###*
 	  @cfg {String} action
 	  The action being performed by this Operation. Should be one of 'create', 'read', 'update' or 'destroy'.
 	  ###
-	action: `undefined`
+	action: undefined
 
 	###*
 	  @cfg {Miwo.data.Filter[]} filters
 	  Optional array of filter objects. Only applies to 'read' actions.
 	  ###
-	filters: `undefined`
+	filters: undefined
 
 	###*
 	  @cfg {Miwo.data.Sorter[]} sorters
 	  Optional array of sorter objects. Only applies to 'read' actions.
 	  ###
-	sorters: `undefined`
+	sorters: undefined
 
 	###*
 	  @cfg {Number} start
 	  The start index (offset), used in paging when running a 'read' action.
 	  ###
-	offset: `undefined`
+	offset: undefined
 
 	###*
 	  @cfg {Number} limit
 	  The number of records to load. Used on 'read' actions when paging is being used.
 	  ###
-	limit: `undefined`
+	limit: undefined
 
 	###*
 	  @cfg {Object} params
 	  Parameters to pass along with the request when performing the operation.
 	  ###
-	params: `undefined`
+	params: undefined
 
 	###*
 	  @cfg {Function} callback
@@ -52,7 +52,7 @@ class Operation extends Miwo.Object
 	  @cfg {Ext.data.Operation} callback.operation The Operation itself.
 	  @cfg {Boolean} callback.success True when operation completed successfully.
 	  ###
-	callback: `undefined`
+	callback: undefined
 
 	###*
 	  @property {Boolean} started
@@ -86,7 +86,7 @@ class Operation extends Miwo.Object
 	  @readonly
 	  @private
 	  ###
-	success: `undefined`
+	success: undefined
 
 	###*
 	  @property {Boolean} exception
@@ -101,29 +101,29 @@ class Operation extends Miwo.Object
 	  The error object passed when {@link #setException} was called. This could be any object or primitive.
 	  @private
 	  ###
-	error: `undefined`
+	error: undefined
 
 	###*
 	  @property {String/Object} error
 	  Error code
 	  @private
 	  ###
-	code: `undefined`
+	code: undefined
 
 	###*
 	  @cfg {Miwo.data.Record[]} records
 	  ###
-	records: `undefined`
+	records: undefined
 
 	###*
 	  @property {Object} response
 	  ###
-	response: `undefined`
+	response: undefined
 
 	###*
 	  @cfg {function} recordFactory
 	  ###
-	createRecord: `undefined`
+	createRecord: undefined
 
 
 	constructor: (config) ->
