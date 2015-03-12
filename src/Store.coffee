@@ -108,6 +108,7 @@ class Store extends Miwo.Object
 
 		if @autoLoad
 			@load()
+		return
 
 
 	init: ->
@@ -658,11 +659,13 @@ class Store extends Miwo.Object
 
 
 	afterReject: (record) ->
+		@updatedRecords.erase(record)
 		@emit("update", this, record, "reject", null)
 		return
 
 
 	afterCommit: (record) ->
+		@updatedRecords.erase(record)
 		@emit("update", this, record, "commit", null)
 		return
 
