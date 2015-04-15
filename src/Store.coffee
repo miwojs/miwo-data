@@ -114,20 +114,20 @@ class Store extends Miwo.Object
 	init: ->
 		return
 
-	getAll: () ->
+	getAll: ->
 		return @data
 
 
-	getLast: () ->
-		return this.data.getLast()
+	getLast: ->
+		return @data.getLast()
 
 
-	getFirst: () ->
-		return this.data[0]
+	getFirst: ->
+		return @data[0]
 
 
-	getCount: () ->
-		return this.data.length
+	getCount: ->
+		return @data.length
 
 
 	getAt: (index) ->
@@ -159,7 +159,7 @@ class Store extends Miwo.Object
 		return @filtered
 
 
-	getTotalCount: () ->
+	getTotalCount: ->
 		return @totalCount
 
 
@@ -167,19 +167,19 @@ class Store extends Miwo.Object
 		return [].concat(@getNewRecords(), @getUpdatedRecords())
 
 
-	getNewRecords: () ->
+	getNewRecords: ->
 		return @newRecords
 
 
-	getRemovedRecords: () ->
+	getRemovedRecords: ->
 		return @removedRecords
 
 
-	getUpdatedRecords: () ->
+	getUpdatedRecords: ->
 		return @updatedRecords
 
 
-	getRecords: () ->
+	getRecords: ->
 		return if @filtered then @filteredData else @data
 
 
@@ -339,7 +339,7 @@ class Store extends Miwo.Object
 			@emit('add', this, rec)
 		if added
 			@emit('datachanged', this)
-		return
+		return this
 
 
 	insert: (index, recs, reversed) ->
@@ -355,7 +355,7 @@ class Store extends Miwo.Object
 			@attachRecord(rec)
 			@emit('add', this, rec, pos)
 		@emit("datachanged", this)
-		return
+		return this
 
 
 	###*
@@ -563,6 +563,9 @@ class Store extends Miwo.Object
 			operations.preventSync = false
 			@emit("beforesync", operations)
 			@proxy.execute(operations, {recordFactory: @bound("createRecord")})  if !operations.preventSync
+		else if Type.isFunction(options)
+			# call callback async
+			miwo.async ()=> options()
 		return
 
 

@@ -9,21 +9,26 @@ class StoreSorters
 
 	constructor: (@store) ->
 		@sorters = []
+		@comparator = @createComparator(this)
+		return
 
 
-	clear: () ->
+	clear: ->
 		@sorters.empty()
 		return this
 
 
-	has: () ->
+	has: ->
 		return @sorters.length > 0
+
+
+	getAll: ->
+		return @sorters
 
 
 	set: (name, dir) ->
 		if Type.isObject(name)
-			for n,d of name
-				@sorters.push(new Sorter({name:n, dir:d}))
+			for n,d of name then @set(n, d)
 		else
 			@sorters.push(new Sorter({name:name, dir:dir}))
 		return this
@@ -37,41 +42,42 @@ class StoreSorters
 
 
 	apply: (silent) ->
-		if @store.remoteSort
-			@store.load()
+		store = @store
+		sorters = @sorters
+		comparator = @comparator
+
+		if store.remoteSort
+			store.load()
 		else
-			comparator = @createSortComparator()
-			@store.sorted = @sorters.length > 0
-			@store.data.sort(comparator)
-			@store.filteredData.sort(comparator)  if @store.filteredData
-			@store.emit("refresh", @store)  if !silent
-
-		@store.emit("sort", @store, @sorters)
+			store.sorted = sorters.length > 0
+			store.data.sort(comparator)
+			store.filteredData.sort(comparator)  if store.filteredData
+			store.emit("refresh", store)  if !silent
+		store.emit("sort", store, sorters)
 		return this
-
-
-	createSortComparator: () ->
-		return (a, b) =>
-			if !@sorters
-				return
-			for sorter in @sorters
-				ret = sorter.compare(a, b)
-				if ret is -1 or ret is 1
-					return ret
-			return
 
 
 	getInsertionIndex: (record, compare) ->
 		index = 0
-		for rec,index in @data
+		for rec,index in @store.data
 			if compare(rec, record) > 0
 				return index
 		return index
 
 
 	getIndex: (rec) ->
-		return @getInsertionIndex(rec, @createSortComparator())
+		return @getInsertionIndex(rec, @comparator)
 
+
+	createComparator: (me)->
+		return (a, b) ->
+			if !me.sorters
+				return
+			for sorter in me.sorters
+				ret = sorter.compare(a, b)
+				if ret is -1 or ret is 1
+					return ret
+			return
 
 
 module.exports = StoreSorters
