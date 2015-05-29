@@ -3,17 +3,10 @@ var gutil = require('gulp-util');
 var rename = require('gulp-rename');
 var uglify = require('gulp-uglify');
 var browserify = require('gulp-browserify');
-var optimizeBrowserify = require('gulp-optimizebrowserify');
-var plumber = require('gulp-plumber');
-var sequence = require('run-sequence');
+var optimizeBrowserify = require('gulp-optimize-browserify');
 
 
 var paths = {
-	js: {
-		src: 'src/index.coffee',
-		target: 'miwo-data.js',
-		distDir: './dist/js/'
-	},
 	watch: {
 		coffee: ['src/**/*.coffee']
 	}
@@ -21,46 +14,41 @@ var paths = {
 
 
 var pipes = {
-	createPlumber: function() {
-		return plumber(function(error) {
-			gutil.log(gutil.colors.red(error.message));
+	createBrowserify: function(options) {
+		var pipe = browserify(options);
+		pipe.on('error', function(err) {
+			gutil.log(err);
 			gutil.beep();
-			this.emit('end');
 		});
+		return pipe;
 	}
 };
 
 
 
-gulp.task('default', ['build']);
+gulp.task('default', ['build', 'watch']);
+
+gulp.task('build', ['compile-js']);
+
+gulp.task('dist', ['compile-js', 'minify-js']);
 
 gulp.task("watch", function() {
-	gulp.start('build');
 	gulp.watch(paths.watch.coffee, ['compile-js']);
 });
 
-gulp.task('build', function(cb) {
-	sequence(['compile-js'], cb);
-});
-
-gulp.task('dist', function(cb) {
-	sequence('build', ['minify-js'], cb);
-});
-
-
 
 gulp.task('compile-js', function() {
-	return gulp.src(paths.js.src, { read: false })
-		.pipe(pipes.createPlumber())
-		.pipe(browserify({transform: ['caching-coffeeify'], extensions: ['.coffee']}))
-		.pipe(rename(paths.js.target))
-		.pipe(gulp.dest(paths.js.distDir));
+	return gulp.src('./src/index.coffee', { read: false })
+		.pipe(pipes.createBrowserify({transform: ['caching-coffeeify'], extensions: ['.coffee'], debug:true}))
+		.pipe(rename('miwo-data.js'))
+		.pipe(gulp.dest('./dist/js/'));
 });
 
 gulp.task('minify-js', function() {
-	return gulp.src(paths.js.distDir+paths.js.target)
+	return gulp.src('src/index.coffee', { read: false })
+		.pipe(pipes.createBrowserify({transform: ['caching-coffeeify'], extensions: ['.coffee']}))
 		.pipe(optimizeBrowserify())
 		.pipe(uglify())
-		.pipe(rename({suffix:'.min'}))
-		.pipe(gulp.dest(paths.js.distDir));
+		.pipe(rename('miwo-data.min.js'))
+		.pipe(gulp.dest('./dist/js/'));
 });

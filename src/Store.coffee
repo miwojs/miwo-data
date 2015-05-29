@@ -527,7 +527,7 @@ class Store extends Miwo.Object
 		return
 
 
-	# Synchronizuje data so serverom
+	# Sync data with server
 	# @option success {Function(this, op)} Success callback
 	# @option error {Function(this, op)} Error callback
 	# @param @param {Object} [options]
