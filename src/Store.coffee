@@ -420,7 +420,7 @@ class Store extends Miwo.Object
 			@data.erase(rec)
 			@newRecords.erase(rec)
 			@updatedRecords.erase(rec)
-			@removedRecords.include(rec)
+			@removedRecords.include(rec) if !rec.phantom
 			@emit('remove', this, rec, index)
 			if @filtered and @getFilters().match(rec) then @filteredData.erase(rec)
 			changed = true
@@ -640,15 +640,12 @@ class Store extends Miwo.Object
 
 
 	afterEdit: (record, modifiedFieldNames) ->
-		@updatedRecords.include(record)
-
-		if @proxy and @autoSync and !@autoSyncSuspended
+		if @proxy
 			for name in modifiedFieldNames
-				# only sync if persistent fields were modified
 				if record.fields[name].persist
 					shouldSync = true
-					break
-			if shouldSync
+					@updatedRecords.include(record)
+			if shouldSync && @autoSync and !@autoSyncSuspended
 				@sync()
 
 		if @sortOnEdit && !@remoteSort && @storeSorters && @storeSorters.has()
